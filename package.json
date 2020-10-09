@@ -1,0 +1,13 @@
+{
+  "name": "alma-woocommerce-gateway",
+  "version": "1.0.0",
+  "repository": "git@github.com:alma/alma-woocommerce-gateway.git",
+  "license": "MIT",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^5.3.0"
+  }
+}

@@ -1,0 +1,37 @@
+version: "3.3"
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "33066:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
+
+  wordpress:
+    depends_on:
+      - db
+    build:
+      context: ./docker
+    volumes:
+      - ./docker/custom-php-config.ini:/usr/local/etc/php/conf.d/custom-php-config.ini
+      - ./docker/container-wordpress-init.sh:/var/www/html/container-wordpress-init.sh
+      - wp_data:/var/www/html
+      - .:/var/www/html/wp-content/plugins/alma-woocommerce-gateway
+    ports:
+      - "8000:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_NAME: wordpress
+      WP_DEBUG: "true"
+
+volumes:
+  db_data: {}
+  wp_data: {}

@@ -50,3 +50,35 @@ Once everything is properly set up, go ahead and switch to \"Live\" mode!
 ![Cart eligibility for monthly payments](.wordpress.org/screenshot-2.png)
 ![Payment method at checkout](.wordpress.org/screenshot-3.png)
 ![Alma\'s payment page that users are sent to upon order confirmation](.wordpress.org/screenshot-4.png)
+
+## Contributing
+
+You need to have `docker` and `docker-compose` installed on your computer.
+
+- Clone the repository
+- Run `docker-compose up` to start WordPress
+- Run `docker-compose exec wordpress bash` to open a shell in the docker container
+- Run `cd wp-content/plugins/alma-woocommerce-gateway` to go into the plugin directory
+- Run `composer install` to install dependencies
+- Go to http://localhost:8000 and follow WordPress installation steps
+- Go to http://localhost:8000/wp-admin/plugin-install.php and install & enable *WooCommerce*
+- Create a product with a price
+- Go to http://localhost:8000/wp-admin/plugins.php and enable alma
+- Create an account on http://dashboard.sandbox.getalma.eu/ to get an API key
+- Go to http://localhost:8000/wp-admin/admin.php?page=wc-settings&tab=checkout&section=alma and fill your API key
+- Visit the shop and add a product to the cart to see Alma in action 🚀
+
+### Xdebug
+
+To configure or disable xdebug, edit the `docker/customphp-config.ini` file and restart the docker container.
+
+### Translations
+
+To edit the translations, use [Poedit](https://poedit.net/)
+
+- Open the `.pot` file and click on `Update from code`, then save
+- Open the `.po` file and click on `Update from code`, add/update the translations, then save
+
+### Build
+
+To build extension for production run `./build.sh`

@@ -1,0 +1,7 @@
+{
+  "[php]": {
+    "editor.defaultFormatter": "valeryanm.vscode-phpsab",
+    "editor.formatOnSave": true
+  },
+  "phpsab.snifferMode": "onType"
+}

@@ -3,7 +3,18 @@
     "description": "Alma WooCommerce integration, adds a new payment method to your shop to let your customers pay in monthly installments",
     "type": "library",
     "require": {
-        "alma/alma-php-client": "*"
+        "alma/alma-php-client": "^1.0"
+    },
+    "require-dev": {
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+        "johnpbloch/wordpress-core": "^5.5",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "squizlabs/php_codesniffer": "^3.5",
+        "woocommerce/woocommerce": "^4.5",
+        "wp-coding-standards/wpcs": "^2.3"
+    },
+    "extra": {
+        "installer-disable": ["wordpress"]
     },
     "license": "GPLv3",
     "authors": [
@@ -12,7 +23,11 @@
             "email": "contact@getalma.eu"
         }
     ],
+    "scripts": {
+        "phpcs": "phpcs --standard=phpcs.xml .",
+        "phpcbf": "phpcbf --standard=phpcs.xml ."
+    },
     "config": {
-        "vendor-dir": "./includes/vendor"
+        "sort-packages": true
     }
 }

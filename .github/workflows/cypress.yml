@@ -1,0 +1,50 @@
+name: Cypress
+
+# on:
+#   push:
+#     branches: [master]
+#   pull_request:
+#     branches: [master]
+on:
+  push:
+    branches: [cypress]
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-no-dev${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-no-dev
+
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --no-dev --prefer-dist --no-progress --no-suggest
+
+      - name: Start server
+        run: docker-compose up -d
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: Yarn-packages-${{ hashFiles('yarn.lock') }}
+
+      - name: Install Yarn dependencies
+        run: yarn
+
+      - name: Initialize WordPress
+        run: docker-compose exec wordpress "./container-wordpress-init.sh" # TODO: make this line work
+
+      - name: Run Cypress
+        run: yarn cypress:run

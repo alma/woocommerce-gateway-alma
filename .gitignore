@@ -1,2 +1,3 @@
-dist/
-includes/vendor
+dist
+vendor
+node_modules

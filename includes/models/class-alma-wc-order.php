@@ -1,20 +1,41 @@
 <?php
+/**
+ * Alma order
+ *
+ * @package Alma_WooCommerce_Gateway
+ */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Not allowed' ); // Exit if accessed directly.
 }
 
+/**
+ * Alma_WC_Order
+ */
 class Alma_WC_Order {
+	/**
+	 * Legacy
+	 *
+	 * @var bool
+	 */
 	private $legacy = false;
+
+	/**
+	 * Order
+	 *
+	 * @var WC_Order|WC_Order_Refund
+	 */
 	private $order;
 
 	/**
-	 * Alma_Order constructor.
+	 * __construct
 	 *
-	 * @param $order_id
-	 * @param null $order_key
+	 * @param int         $order_id Order Id.
+	 * @param string|null $order_key Order key.
 	 *
-	 * @throws Exception
+	 * @return void
+	 *
+	 * @throws \Exception Exception.
 	 */
 	public function __construct( $order_id, $order_key = null ) {
 		$this->legacy = version_compare( wc()->version, '3.0.0', '<' );
@@ -34,23 +55,50 @@ class Alma_WC_Order {
 		$this->order = $order;
 	}
 
+	/**
+	 * Payment complete.
+	 *
+	 * @param string $payment_id Payment Id.
+	 *
+	 * @return void
+	 */
 	public function payment_complete( $payment_id ) {
 		$this->order->payment_complete( $payment_id );
 		wc()->cart->empty_cart();
 	}
 
+	/**
+	 * Get WC order.
+	 *
+	 * @return WC_Order|WC_Order_Refund
+	 */
 	public function get_wc_order() {
 		return $this->order;
 	}
 
+	/**
+	 * Get order total.
+	 *
+	 * @return int
+	 */
 	public function get_total() {
 		return alma_wc_price_to_cents( $this->order->get_total() );
 	}
 
+	/**
+	 * Get order Id.
+	 *
+	 * @return int
+	 */
 	public function get_id() {
 		return $this->order->get_id();
 	}
 
+	/**
+	 * Get order key.
+	 *
+	 * @return string
+	 */
 	public function get_order_key() {
 		if ( $this->legacy ) {
 			return $this->order->order_key;
@@ -59,10 +107,20 @@ class Alma_WC_Order {
 		}
 	}
 
+	/**
+	 * Get order reference.
+	 *
+	 * @return string
+	 */
 	public function get_order_reference() {
-	    return $this->order->get_order_number();
-    }
+		return $this->order->get_order_number();
+	}
 
+	/**
+	 * Order has billing address.
+	 *
+	 * @return bool
+	 */
 	public function has_billing_address() {
 		if ( $this->legacy ) {
 			return $this->order->billing_address_1 || $this->order->billing_address_2;
@@ -71,6 +129,11 @@ class Alma_WC_Order {
 		}
 	}
 
+	/**
+	 * Order has shipping address.
+	 *
+	 * @return bool
+	 */
 	public function has_shipping_address() {
 		if ( $this->legacy ) {
 			return $this->order->shipping_address_1 || $this->order->shipping_address_2;
@@ -79,6 +142,11 @@ class Alma_WC_Order {
 		}
 	}
 
+	/**
+	 * Get billing address.
+	 *
+	 * @return array
+	 */
 	public function get_billing_address() {
 		if ( $this->legacy ) {
 			return array(
@@ -109,6 +177,11 @@ class Alma_WC_Order {
 		}
 	}
 
+	/**
+	 * Get shipping address.
+	 *
+	 * @return array
+	 */
 	public function get_shipping_address() {
 		if ( $this->legacy ) {
 			return array(
@@ -135,21 +208,31 @@ class Alma_WC_Order {
 		}
 	}
 
+	/**
+	 * Get customer order url.
+	 *
+	 * @return string
+	 */
 	public function get_customer_url() {
-	    return $this->order->get_view_order_url();
-    }
+		return $this->order->get_view_order_url();
+	}
 
-    public function get_merchant_url() {
-        $admin_path = 'post.php?post=' . $this->order->get_id() . '&action=edit';
+	/**
+	 * Get merchant order url.
+	 *
+	 * @return string
+	 */
+	public function get_merchant_url() {
+		$admin_path = 'post.php?post=' . $this->order->get_id() . '&action=edit';
 
-        if ( version_compare( wc()->version, '2.6.0', '<' ) ) {
-            return '';
-        } elseif ( version_compare( wc()->version, '3.0.0', '<' ) ) {
-            return admin_url($admin_path);
-        } elseif ( version_compare( wc()->version, '3.3.0', '<' ) ) {
-            return get_admin_url( null, $admin_path);
-        } else {
-	        return $this->order->get_edit_order_url();
-        }
-    }
+		if ( version_compare( wc()->version, '2.6.0', '<' ) ) {
+			return '';
+		} elseif ( version_compare( wc()->version, '3.0.0', '<' ) ) {
+			return admin_url( $admin_path );
+		} elseif ( version_compare( wc()->version, '3.3.0', '<' ) ) {
+			return get_admin_url( null, $admin_path );
+		} else {
+			return $this->order->get_edit_order_url();
+		}
+	}
 }

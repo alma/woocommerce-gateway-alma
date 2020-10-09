@@ -11,6 +11,8 @@
  * Text Domain: alma-woocommerce-gateway
  * Domain Path: /languages
  *
+ * @package Alma_WooCommerce_Gateway
+ *
  * WC requires at least: 2.6
  * WC tested up to: 4.0
  *
@@ -29,11 +31,10 @@
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
-	die( 'Not allowed' );
+	die( 'Not allowed' ); // Exit if accessed directly.
 }
 
 define( 'ALMA_WC_VERSION', '1.1.7' );
-define( 'ALMA_WC_TEXT_DOMAIN', 'alma-woocommerce-gateway' );
 
 /**
  * Return instance of Alma_Plugin.
@@ -44,7 +45,7 @@ function alma_wc_plugin() {
 	static $plugin;
 
 	if ( ! isset( $plugin ) ) {
-		require_once( 'includes/class-alma-wc-plugin.php' );
+		require_once 'includes/class-alma-wc-plugin.php';
 
 		$plugin = new Alma_WC_Plugin( __FILE__, ALMA_WC_VERSION );
 	}
