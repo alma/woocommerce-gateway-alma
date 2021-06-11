@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Alma_WC_Cart
  */
-class Alma_WC_Cart {
+class Alma_WC_Model_Cart {
 	/**
 	 * Legacy
 	 *

@@ -23,7 +23,7 @@ class Alma_WC_Payment_Validator {
 	 *
 	 * @param string $payment_id Payment Id.
 	 *
-	 * @return Alma_WC_Order
+	 * @return Alma_WC_Model_Order
 	 *
 	 * @throws Alma_WC_Payment_Validation_Error Alma WC payment validation error.
 	 */
@@ -43,7 +43,7 @@ class Alma_WC_Payment_Validator {
 		}
 
 		try {
-			$order = new Alma_WC_Order( $payment->custom_data['order_id'], $payment->custom_data['order_key'] );
+			$order = new Alma_WC_Model_Order( $payment->custom_data['order_id'], $payment->custom_data['order_key'] );
 		} catch ( \Exception $e ) {
 			$logger->error( "Error getting order associated to payment '$payment_id': " . $e->getMessage() );
 			throw new Alma_WC_Payment_Validation_Error( 'order_fetch_error' );

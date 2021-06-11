@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Alma_WC_Customer
  */
-class Alma_WC_Customer {
+class Alma_WC_Model_Customer {
 	/**
 	 * Legacy
 	 *

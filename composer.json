@@ -10,6 +10,7 @@
         "johnpbloch/wordpress-core": "^4.4",
         "phpcompatibility/phpcompatibility-wp": "^2.1",
         "squizlabs/php_codesniffer": "^3.5",
+        "symfony/var-dumper": "^5.3",
         "woocommerce/woocommerce": "^2.6",
         "wp-coding-standards/wpcs": "^2.3"
     },

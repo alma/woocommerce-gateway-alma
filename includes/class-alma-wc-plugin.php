@@ -3,7 +3,11 @@
  * Alma payments plugin for WooCommerce
  *
  * @package Alma_WooCommerce_Gateway
+ * @noinspection HtmlUnknownTarget
  */
+
+use Alma\API\Client;
+use Alma\API\RequestError;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Not allowed' ); // Exit if accessed directly.
@@ -13,41 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Alma_WC_Plugin
  */
 class Alma_WC_Plugin {
-	/**
-	 * Filepath of main plugin file.
-	 *
-	 * @var string
-	 */
-	public $file;
-
-	/**
-	 * Plugin version.
-	 *
-	 * @var string
-	 */
-	public $version;
-
-	/**
-	 * Absolute plugin path.
-	 *
-	 * @var string
-	 */
-	public $plugin_path;
-
-	/**
-	 * Absolute plugin URL.
-	 *
-	 * @var string
-	 */
-	public $plugin_url;
-
-	/**
-	 * Absolute path to plugin includes dir.
-	 *
-	 * @var string
-	 */
-	public $includes_path;
-
 	/**
 	 * Flag to indicate the plugin has been bootstrapped.
 	 *
@@ -65,7 +34,7 @@ class Alma_WC_Plugin {
 	/**
 	 * Instance of Alma Api client.
 	 *
-	 * @var \Alma\API\Client
+	 * @var Client
 	 */
 	private $alma_client;
 
@@ -79,28 +48,11 @@ class Alma_WC_Plugin {
 	/**
 	 * __construct
 	 *
-	 * @param string $file File.
-	 * @param string $version Version.
-	 *
 	 * @return void
 	 */
-	public function __construct( $file, $version ) {
-		$this->file    = $file;
-		$this->version = $version;
-
-		// Path.
-		$this->plugin_path   = trailingslashit( plugin_dir_path( $this->file ) );
-		$this->plugin_url    = trailingslashit( plugin_dir_url( $this->file ) );
-		$this->includes_path = $this->plugin_path . trailingslashit( 'includes' );
-
-		require_once $this->plugin_path . 'vendor/autoload.php';
-		require_once $this->includes_path . 'class-alma-wc-logger.php';
+	public function __construct() {
 		$this->logger = new Alma_WC_Logger();
-
-		// Updates.
-		if ( version_compare( $version, get_option( 'alma_version' ), '>' ) ) {
-			$this->update_to( $version );
-		}
+		$this->self_update();
 	}
 
 	/**
@@ -119,15 +71,14 @@ class Alma_WC_Plugin {
 	}
 
 	/**
-	 * Update to.
-	 *
-	 * @param string $new_version New version.
+	 * Update plugin to the latest version.
 	 *
 	 * @return void
 	 */
-	private function update_to( $new_version ) {
-		// Right now, updating only means setting the correct version in options.
-		update_option( 'alma_version', $new_version );
+	private function self_update() {
+		if ( version_compare( ALMA_WC_VERSION, get_option( 'alma_version' ), '>' ) ) {
+			update_option( 'alma_version', ALMA_WC_VERSION );
+		}
 	}
 
 	/**
@@ -137,7 +88,7 @@ class Alma_WC_Plugin {
 	 */
 	public function init_alma_client() {
 		try {
-			$this->alma_client = new \Alma\API\Client(
+			$this->alma_client = new Client(
 				$this->settings->get_active_api_key(),
 				array(
 					'mode'   => $this->settings->get_environment(),
@@ -150,7 +101,7 @@ class Alma_WC_Plugin {
 			$this->alma_client->addUserAgentComponent( 'Alma for WooCommerce', ALMA_WC_VERSION );
 		} catch ( \Exception $e ) {
 			if ( $this->settings->is_logging_enabled() ) {
-				$this->logger->error( 'Error creating Alma API client: ' . print_r( $e, true ) );
+				$this->log_stack_trace( 'Error creating Alma API client', $e );
 			}
 		}
 	}
@@ -158,7 +109,7 @@ class Alma_WC_Plugin {
 	/**
 	 * Get alma client.
 	 *
-	 * @return \Alma\API\Client|null
+	 * @return Client|null
 	 */
 	public function get_alma_client() {
 		if ( ! $this->alma_client ) {
@@ -174,8 +125,6 @@ class Alma_WC_Plugin {
 	 * @return void
 	 */
 	public function try_running() {
-		require_once $this->includes_path . 'class-alma-wc-webhooks.php';
-
 		add_action(
 			Alma_WC_Webhooks::action_for( Alma_WC_Webhooks::CUSTOMER_RETURN ),
 			array(
@@ -195,7 +144,7 @@ class Alma_WC_Plugin {
 		add_action( 'init', array( $this, 'bootstrap' ) );
 		add_filter( 'allowed_redirect_hosts', array( $this, 'alma_domains_whitelist' ) );
 
-		add_filter( 'plugin_action_links_' . plugin_basename( $this->file ), array( $this, 'plugin_action_links' ) );
+		add_filter( 'plugin_action_links_' . plugin_basename( ALMA_WC_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 		add_action( 'wp_ajax_alma_dismiss_notice_message', array( $this, 'ajax_dismiss_notice' ) );
 	}
 
@@ -218,16 +167,6 @@ class Alma_WC_Plugin {
 
 			$this->check_dependencies();
 
-			require_once $this->includes_path . 'models/class-alma-wc-cart.php';
-			require_once $this->includes_path . 'models/class-alma-wc-customer.php';
-			require_once $this->includes_path . 'models/class-alma-wc-order.php';
-			require_once $this->includes_path . 'models/class-alma-wc-payment.php';
-			require_once $this->includes_path . 'alma-wc-functions.php';
-			require_once $this->includes_path . 'class-alma-wc-generic-handler.php';
-			require_once $this->includes_path . 'class-alma-wc-cart-handler.php';
-			require_once $this->includes_path . 'class-alma-wc-product-handler.php';
-			require_once $this->includes_path . 'class-alma-wc-settings.php';
-			require_once $this->includes_path . 'class-alma-wc-shortcodes.php';
 			$this->settings = new Alma_WC_Settings();
 
 			$this->run();
@@ -374,7 +313,7 @@ class Alma_WC_Plugin {
 		$enable_locale = apply_filters( 'alma_wc_enable_for_locale', 'fr_' === $main_locale, $locale );
 
 		if ( ! $enable_locale ) {
-			$this->logger->info( "Alma is not enabled for locale '{$locale}'" );
+			$this->logger->info( "Alma is not enabled for locale '$locale'" );
 			return false;
 		}
 
@@ -388,7 +327,7 @@ class Alma_WC_Plugin {
 	public function check_currency() {
 		$currency = get_woocommerce_currency();
 		if ( 'EUR' !== $currency ) {
-			$this->logger->info( "Currency {$currency} not supported - Not displaying Alma" );
+			$this->logger->info( "Currency $currency not supported - Not displaying Alma" );
 			return false;
 		}
 
@@ -441,10 +380,6 @@ class Alma_WC_Plugin {
 	 */
 	private function run() {
 
-		require_once $this->includes_path . 'class-alma-wc-payment-validation-error.php';
-		require_once $this->includes_path . 'class-alma-wc-payment-validator.php';
-		require_once $this->includes_path . 'class-alma-wc-payment-gateway.php';
-
 		$this->init_widget_handlers();
 
 		// Don't advertise our payment gateway if we're in test mode and current user is not an admin.
@@ -481,7 +416,7 @@ class Alma_WC_Plugin {
 
 		try {
 			$merchant = $alma->merchants->me();
-		} catch ( \Alma\API\RequestError $e ) {
+		} catch ( RequestError $e ) {
 			if ( $e->response && 401 === $e->response->responseCode ) {
 				$dashboard_url = 'https://dashboard.getalma.eu/security';
 
@@ -498,7 +433,9 @@ class Alma_WC_Plugin {
 						// translators: %s: Error message.
 						__( 'Alma encountered an error when fetching merchant status: %s', 'alma-woocommerce-gateway' ),
 						$e->getMessage()
-					)
+					),
+					$e->getCode(),
+					$e
 				);
 			}
 		}
@@ -589,7 +526,7 @@ class Alma_WC_Plugin {
 	 * @return void
 	 */
 	public function load_plugin_textdomain() {
-		load_plugin_textdomain( 'alma-woocommerce-gateway', false, plugin_basename( $this->plugin_path ) . '/languages' );
+		load_plugin_textdomain( 'alma-woocommerce-gateway', false, plugin_basename( ALMA_WC_PLUGIN_PATH ) . '/languages' );
 	}
 
 	/**
@@ -620,12 +557,12 @@ class Alma_WC_Plugin {
 	 * @return string URL to given asset
 	 */
 	public function get_asset_url( $path ) {
-		return $this->plugin_url . 'assets/' . $path;
+		return ALMA_WC_PLUGIN_URL . 'assets/' . $path;
 	}
 
 	/** WEBHOOKS HANDLERS **/
 	private function get_payment_to_validate() {
-		$payment_id = $_GET['pid'];
+		$payment_id = isset( $_GET['pid'] ) ? $_GET['pid'] : null;
 
 		if ( ! $payment_id ) {
 			$this->logger->error( 'Payment validation webhook called without a payment ID' );
@@ -662,5 +599,22 @@ class Alma_WC_Plugin {
 		$payment_id = $this->get_payment_to_validate();
 		$gateway    = new Alma_WC_Payment_Gateway();
 		$gateway->validate_payment_from_ipn( $payment_id );
+	}
+
+	/**
+	 * Log all exceptions stack trace prefixed with an error message.
+	 *
+	 * @param string    $message as base error message to log.
+	 * @param Exception $e as exception to log.
+	 */
+	public function log_stack_trace( $message, Exception $e ) {
+		$cnt = 0;
+		do {
+			$this->logger->error( sprintf( '%s#%s', $message, $cnt ) );
+			$this->logger->error( $e->getMessage() );
+			$this->logger->error( $e->getTraceAsString() );
+			$e = $e->getPrevious();
+			$cnt++;
+		} while ( $e );
 	}
 }

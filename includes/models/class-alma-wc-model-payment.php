@@ -12,16 +12,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Alma_WC_Payment
  */
-class Alma_WC_Payment {
+class Alma_WC_Model_Payment {
 
 	/**
-	 * Create Payment crom cart.
+	 * Create Payment data for Alma API request from Woocommerce Cart.
 	 *
 	 * @return array
 	 */
 	public static function from_cart() {
-		$cart     = new Alma_WC_Cart();
-		$customer = new Alma_WC_Customer();
+		$cart     = new Alma_WC_Model_Cart();
+		$customer = new Alma_WC_Model_Customer();
 
 		$data = array(
 			'payment' => array(
@@ -43,7 +43,7 @@ class Alma_WC_Payment {
 	}
 
 	/**
-	 * Create Payment crom cart.
+	 * Create Payment data for Alma API request from Woocommerce Order.
 	 *
 	 * @param int $order_id Order Id.
 	 * @param int $installments_count Number of installments.
@@ -52,7 +52,7 @@ class Alma_WC_Payment {
 	 */
 	public static function from_order( $order_id, $installments_count ) {
 		try {
-			$order = new Alma_WC_Order( $order_id );
+			$order = new Alma_WC_Model_Order( $order_id );
 		} catch ( Exception $e ) {
 			$logger = new Alma_WC_Logger();
 			$logger->error( 'Error getting payment info from order: ' . $e->getMessage() );
@@ -106,15 +106,14 @@ class Alma_WC_Payment {
 		}
 
 		// Merge built data on data extracted from Cart to have as much data as possible.
-		$data = alma_wc_array_merge_recursive( self::from_cart(), $data );
-
-		return $data;
+		return alma_wc_array_merge_recursive( self::from_cart(), $data );
 	}
 
 	/**
 	 * Get customer cancel url.
 	 *
 	 * @return string
+	 * @noinspection PhpDeprecationInspection
 	 */
 	public static function get_customer_cancel_url() {
 		if ( version_compare( wc()->version, '2.5.0', '<' ) ) {

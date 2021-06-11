@@ -1,16 +1,22 @@
 Changelog
 =========
 
+v1.x.x
+------
+
+* Add autoloader
+* Minor refactorisations
+
 v1.3.0
 ------
 
 * Remove PHP warnings & do not display widget on out-stock or un-priced product
 * Minor refactoring
 * Enhance dev docker env (display php warnings / errors + prioritize custom-php-ini file)
-* Fix widget display price without tax depending on woocommerce tax rule configuration
+* Fix widget display price without tax depending on WooCommerce tax rule configuration
 * Add fallback locale on checkout payment ALMA API call
 * Add filter to override locale on checkout payment ALMA API call
-* add widget shortcodes
+* Add widget shortcodes
 
 v1.2.3
 ------
