@@ -21,7 +21,7 @@ services:
     volumes:
       - ./docker/custom-php-config.ini:/usr/local/etc/php/conf.d/zz-custom-php-config.ini
       - wp_data:/var/www/html
-      - .:/var/www/html/wp-content/plugins/alma-woocommerce-gateway
+      - ./src:/var/www/html/wp-content/plugins/alma-woocommerce-gateway
     ports:
       - "8000:80"
     environment:

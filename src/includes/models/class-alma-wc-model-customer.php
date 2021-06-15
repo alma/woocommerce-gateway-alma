@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Alma_WC_Customer
+ * Alma_WC_Model_Customer
  */
 class Alma_WC_Model_Customer {
 	/**

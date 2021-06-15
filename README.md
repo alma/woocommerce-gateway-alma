@@ -1,10 +1,9 @@
-Alma Monthly Payments for WooCommerce
-=====
+# Alma Monthly Payments for WooCommerce
 
 Contributors: almapayments, olance  
 Tags: payments, payment gateway, woocommerce, ecommerce, e-commerce, sell, woo commerce, alma, monthly payments, split payments  
 Requires at least: 4.4  
-Tested up to: 5.4  
+Tested up to: 5.7
 Requires PHP: 5.6  
 Stable tag: 1.3.0
 License: GPLv3  
@@ -14,10 +13,9 @@ This plugin adds a new payment method to WooCommerce, which allows you to offer 
 
 ## ⚠️ Restricted availability
 
-🇫🇷Pour le moment, Alma n'est disponible qu'aux marchands **français** avec lesquels nous pouvons interagir. Vous pouvez [créer votre compte](https://dashboard.getalma.eu) librement, mais devez nous contacter pour l'activer et commencer à accepter des paiements.
+🇫🇷 Pour le moment, Alma n\'est disponible qu\'aux marchands **français** avec lesquels nous pouvons interagir. Vous pouvez [créer votre compte](https://dashboard.getalma.eu) librement, mais devez nous contacter pour l\'activer et commencer à accepter des paiements.
 
-🇬🇧For the moment, Alma is only available to **french** merchants with whom we can communicate. You can [create your account](https://dashboard.getalma.eu) freely, but you must contact us to have it activated and to start accepting payments.
-
+🇬🇧 For the moment, Alma is only available to **french** merchants with whom we can communicate. You can [create your account](https://dashboard.getalma.eu) freely, but you must contact us to have it activated and to start accepting payments.
 
 ## Description
 
@@ -96,6 +94,7 @@ function inject_alma_cart_eligibility_into_cart() {
     echo do_shortcode( '[alma-cart-eligibility]' );
 }
 // ...
+```
 
 #### Shortcode optional attributes and content
 
@@ -172,4 +171,4 @@ To edit the translations, use [Poedit](https://poedit.net/)
 
 ### Build
 
-To build extension for production run `./build.sh`
+To build extension for production run `./bin/build.sh`
