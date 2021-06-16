@@ -342,48 +342,48 @@ class Alma_WC_Admin_Form {
 		$customer_fee_fixed,
 		$customer_fee_variable
 	) {
-		$description = '<p>';
+		$you_can_offer = sprintf(
+			// translators: %d: number of installments.
+			__( 'You can offer %1$d-installment payments for amounts between <b>%2$d€</b> and <b>%3$d€</b>.', 'alma-woocommerce-gateway' ),
+			$installments,
+			$min_amount,
+			$max_amount
+		);
+		$fees_applied  = __( 'Fees applied to each transaction for this plan:', 'alma-woocommerce-gateway' );
+		$you_pay       = $this->generate_fee_to_pay_description( __( 'You pay:', 'alma-woocommerce-gateway' ), $merchant_fee_variable, $merchant_fee_fixed );
+		$customer_pays = $this->generate_fee_to_pay_description( __( 'Customer pays:', 'alma-woocommerce-gateway' ), $customer_fee_variable, $customer_fee_fixed );
 
-		// translators: %d: number of installments.
-		$description .= sprintf( __( 'You can offer %1$d-installment payments for amounts between <b>%2$d€</b> and <b>%3$d€</b>.', 'alma-woocommerce-gateway' ), $installments, $min_amount, $max_amount )
-						. '<br>'
-						. __( 'Fees applied to each transaction for this plan:', 'alma-woocommerce-gateway' );
+		return sprintf( '<p>%s<br>%s %s %s</p>', $you_can_offer, $fees_applied, $you_pay, $customer_pays );
+	}
 
-		if ( $merchant_fee_variable || $merchant_fee_fixed ) {
-			$description .= '<br>';
-			$description .= '<b>' . __( 'You pay:', 'alma-woocommerce-gateway' ) . '</b> ';
+	/**
+	 * Generate a string with % + € OR only % OR only € (depending on parameters given)
+	 * If all fees are <= 0 : return an empty string
+	 *
+	 * @param string $translation as description prefix.
+	 * @param float  $fee_variable as variable amount (if any).
+	 * @param float  $fee_fixed as fixed amount (if any).
+	 *
+	 * @return string
+	 */
+	private function generate_fee_to_pay_description( $translation, $fee_variable, $fee_fixed ) {
+		if ( ! $fee_variable && ! $fee_fixed ) {
+			return '';
 		}
 
-		if ( $merchant_fee_variable ) {
-			$description .= $merchant_fee_variable . '%';
+		$fees = '';
+		if ( $fee_variable ) {
+			$fees .= $fee_variable . '%';
 		}
 
-		if ( $merchant_fee_fixed ) {
-			if ( $merchant_fee_variable ) {
-				$description .= ' + ';
+		if ( $fee_fixed ) {
+			if ( $fee_variable ) {
+				$fees .= ' + ';
 			}
-			$description .= $merchant_fee_fixed . '€';
+			$fees .= $fee_fixed . '€';
 		}
 
-		if ( $customer_fee_variable || $customer_fee_fixed ) {
-			$description .= '<br>';
-			$description .= '<b>' . __( 'Customer pays:', 'alma-woocommerce-gateway' ) . '</b> ';
-		}
-
-		if ( $customer_fee_variable ) {
-			$description .= $customer_fee_variable . '%';
-		}
-
-		if ( $customer_fee_fixed ) {
-			if ( $customer_fee_variable ) {
-				$description .= ' + ';
-			}
-			$description .= $customer_fee_fixed . '€';
-		}
-
-		$description .= '</p>';
-
-		return $description;
+		return sprintf( '<br><b>%s</b> %s', $translation, $fees );
 	}
 
 }
