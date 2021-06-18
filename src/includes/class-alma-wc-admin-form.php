@@ -55,11 +55,15 @@ class Alma_WC_Admin_Form {
 	 *
 	 * @param array $fee_plan as fee plan definitions.
 	 * @param array $default_settings as default settings definitions.
+	 * @param bool  $selected if this field is currently selected.
 	 *
 	 * @return array[] as field_form definition
 	 */
-	private function init_fee_plan_fields( $fee_plan, $default_settings ) {
+	private function init_fee_plan_fields( $fee_plan, $default_settings, $selected ) {
 		$installments          = $fee_plan['installments_count'];
+		$key                   = $installments . 'x';
+		$class                 = "alma_fee_plan_{$key} alma_fee_plan";
+		$css                   = $selected ? '' : 'display: none;';
 		$default_min_amount    = alma_wc_price_from_cents( $fee_plan['min_purchase_amount'] );
 		$default_max_amount    = alma_wc_price_from_cents( $fee_plan['max_purchase_amount'] );
 		$merchant_fee_fixed    = alma_wc_price_from_cents( $fee_plan['merchant_fee_fixed'] );
@@ -70,9 +74,15 @@ class Alma_WC_Admin_Form {
 		return array(
 			"${installments}x_section"    => array(
 				// translators: %d: number of installments.
-				'title'       => '<hr>' . sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $installments ),
-				'type'        => 'title',
-				'description' => $this->generate_fee_plan_description( $installments, $default_min_amount, $default_max_amount, $merchant_fee_fixed, $merchant_fee_variable, $customer_fee_fixed, $customer_fee_variable ),
+				'title'             => sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $fee_plan['installments_count'] ),
+				'type'              => 'title',
+				'description'       => $this->generate_fee_plan_description( $installments, $default_min_amount, $default_max_amount, $merchant_fee_fixed, $merchant_fee_variable, $customer_fee_fixed, $customer_fee_variable ),
+				'class'             => $class,
+				'description_class' => $class,
+				'table_class'       => $class,
+				'css'               => $css,
+				'description_css'   => $css,
+				'table_css'         => $css,
 			),
 			"enabled_${installments}x"    => array(
 				'title'   => __( 'Enable/Disable', 'alma-woocommerce-gateway' ),
@@ -140,7 +150,8 @@ class Alma_WC_Admin_Form {
 			'keys_section' => array(
 				'title'       => '<hr>' . $keys_title,
 				'type'        => 'title',
-				'description' => __( 'You can find your API keys on <a href="https://dashboard.getalma.eu/security" target="_blank">your Alma dashboard</a>', 'alma-woocommerce-gateway' ),
+				/* translators: %s Alma security URL */
+				'description' => sprintf( __( 'You can find your API keys on <a href="%s" target="_blank">your Alma dashboard</a>', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/security' ),
 			),
 			'live_api_key' => array(
 				'title' => __( 'Live API key', 'alma-woocommerce-gateway' ),
@@ -171,16 +182,32 @@ class Alma_WC_Admin_Form {
 	 * @return array|array[]
 	 */
 	private function init_fee_plans_fields( $default_settings ) {
-		$fee_plans_fields = array();
+		$fee_plans_fields  = array();
+		$select_options    = array();
+		$selected_fee_plan = $default_settings['selected_fee_plan'];
+		$title_field       = array(
+			'fee_plan_section' => array(
+				'title' => '<hr>' . __( '→ Fee plans configuration', 'alma-woocommerce-gateway' ),
+				'type'  => 'title',
+			),
+		);
 		try {
-			$merchant = alma_wc_plugin()->get_alma_client()->merchants->me();
+			$merchant       = alma_wc_plugin()->get_alma_client()->merchants->me();
+			$fee_plans      = $merchant->fee_plans;
+			$select_options = $this->generate_select_options( $fee_plans );
+			if ( count( $select_options ) === 0 ) {
+				/* translators: %s: Alma conditions URL */
+				$title_field['fee_plan_section']['description'] = sprintf( __( '⚠ There is no fee plan allowed in your <a href="%s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/conditions' );
 
-			$fee_plans = $merchant->fee_plans;
+				return $title_field;
+			}
+			$selected_fee_plan = $this->generate_selected_free_plan_key( $select_options, $default_settings );
 			foreach ( $fee_plans as $fee_plan ) {
 				if ( $fee_plan['allowed'] ) {
+					$fee_plan_key     = $fee_plan['installments_count'] . 'x';
 					$fee_plans_fields = array_merge(
 						$fee_plans_fields,
-						$this->init_fee_plan_fields( $fee_plan, $default_settings )
+						$this->init_fee_plan_fields( $fee_plan, $default_settings, $selected_fee_plan === $fee_plan_key )
 					);
 				}
 			}
@@ -188,7 +215,20 @@ class Alma_WC_Admin_Form {
 			alma_wc_plugin()->handle_settings_exception( $e );
 		}
 
-		return $fee_plans_fields;
+		return array_merge(
+			$title_field,
+			array(
+				'selected_fee_plan' => array(
+					'title'       => __( 'Select a fee plan to update', 'alma-woocommerce-gateway' ),
+					'type'        => 'select_alma_fee_plan',
+					/* translators: %s: Alma conditions URL */
+					'description' => sprintf( __( 'Choose which fee plan you want to modify (only your <a href="%s" target="_blank">Alma dashboard</a> available fee plans are shown here).', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/conditions' ),
+					'default'     => $selected_fee_plan,
+					'options'     => $select_options,
+					'fee_plans'   => $fee_plans_fields,
+				),
+			)
+		);
 	}
 
 	/**
@@ -384,6 +424,40 @@ class Alma_WC_Admin_Form {
 		}
 
 		return sprintf( '<br><b>%s</b> %s', $translation, $fees );
+	}
+
+	/**
+	 * Generate select options key values for allowed fee_plans
+	 *
+	 * @param array $fee_plans as merchant fee_plans.
+	 *
+	 * @return array
+	 */
+	private function generate_select_options( $fee_plans ) {
+		$select_options = array();
+		foreach ( $fee_plans as $fee_plan ) {
+			if ( $fee_plan['allowed'] ) {
+				$option_key = $fee_plan['installments_count'] . 'x';
+				// translators: %d: number of installments.
+				$select_options[ $option_key ] = sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $fee_plan['installments_count'] );
+			}
+		}
+		return $select_options;
+	}
+
+	/**
+	 * Generate the selected option for current fee_plan_keys options
+	 *
+	 * @param array $select_options as key,value allowed fee_plan options.
+	 * @param array $default_settings as default settings.
+	 *
+	 * @return string
+	 */
+	private function generate_selected_free_plan_key( array $select_options, $default_settings ) {
+		$selected_fee_plan   = alma_wc_plugin()->settings->selected_fee_plan ? alma_wc_plugin()->settings->selected_fee_plan : $default_settings['selected_fee_plan'];
+		$select_options_keys = array_keys( $select_options );
+
+		return in_array( $selected_fee_plan, $select_options_keys, true ) ? $selected_fee_plan : $select_options_keys[0];
 	}
 
 }

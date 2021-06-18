@@ -502,4 +502,150 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 
 		return end( $pnx_list );
 	}
+
+	/**
+	 * Generate a select `alma_fee` Input HTML (based on `select_alma_fee_plan` field definition).
+	 * Warning: use only one `select_alma_fee_plan` type in your form (script & css are inlined here)
+	 *
+	 * @param  mixed $key as field key.
+	 * @param  mixed $data as field configuration.
+	 *
+	 * @return string
+	 * @see WC_Settings_API::generate_settings_html() that calls dynamically generate_<field_type>_html
+	 */
+	public function generate_select_alma_fee_plan_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'disabled'          => false,
+			'class'             => '',
+			'css'               => '',
+			'placeholder'       => '',
+			'type'              => 'text',
+			'desc_tip'          => false,
+			'description'       => '',
+			'custom_attributes' => array(),
+			'options'           => array(),
+			'fee_plans'         => array(),
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		<script>
+			jQuery(document).ready(function() {
+				jQuery('#' + '<?php echo esc_attr( $field_key ); ?>').change(function() {
+					jQuery('.alma_fee_plan').hide();
+					var $sections = jQuery('.alma_fee_plan_' + jQuery(this).val());
+					$sections.show();
+					$sections.effect('highlight', 1500);
+					$sections.find('b').effect('highlight', 5000);
+				});
+			});
+		</script>
+		<style>
+			.alma_fee_plan {
+				padding-left: 6px;
+				border-left: solid 2px lightgrey;
+			}
+			h3.alma_fee_plan {
+				padding-top: 15px;
+				padding-bottom: 15px;
+			}
+			div.alma_fee_plan,
+			table.form-table.alma_fee_plan
+			{
+				margin-top: -15px;
+			}
+			table.form-table.alma_fee_plan tr:first-child th {
+				padding-top: 35px;
+			}
+			@media(max-width: 782px) {
+				table.form-table.alma_fee_plan th,
+				table.form-table.alma_fee_plan td {
+					padding-left: 6px;
+					border-left: solid 1px lightgrey;
+				}
+				table.form-table.alma_fee_plan,
+				.alma_fee_plan {
+					margin-left: 36px;
+				}
+			}
+			@media(min-width: 783px) {
+				table.form-table.alma_fee_plan tr:first-child td {
+					padding-top: 30px;
+				}
+				table.form-table.alma_fee_plan th {
+					padding-left: 6px;
+					border-left: solid 2px lightgrey;
+				}
+				table.form-table.alma_fee_plan,
+				.alma_fee_plan {
+					margin-left: 236px;
+				}
+			}
+		</style>
+		<tr valign="top">
+			<th scope="row" class="titledesc">
+				<label for="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></label>
+				<?php echo $this->get_tooltip_html( $data ); ?>
+			</th>
+			<td class="forminp">
+				<fieldset>
+					<legend class="screen-reader-text"><span><?php echo wp_kses_post( $data['title'] ); ?></span></legend>
+					<select class="select <?php echo esc_attr( $data['class'] ); ?>" name="<?php echo esc_attr( $field_key ); ?>" id="<?php echo esc_attr( $field_key ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" <?php disabled( $data['disabled'], true ); ?> <?php echo $this->get_custom_attribute_html( $data ); ?>>
+						<?php foreach ( (array) $data['options'] as $option_key => $option_value ) : ?>
+							<option value="<?php echo esc_attr( $option_key ); ?>" <?php selected( $option_key, esc_attr( $this->get_option( $key ) ) ); ?>><?php echo esc_attr( $option_value ); ?></option>
+						<?php endforeach; ?>
+					</select>
+					<?php echo $this->get_description_html( $data ); ?>
+				</fieldset>
+			</td>
+		</tr>
+		<tr>
+			<table>
+				<?php
+					$this->generate_settings_html( $data['fee_plans'] );
+				?>
+			</table>
+		</tr>
+		<?php
+
+		return ob_get_clean();
+	}
+
+	/**
+	 * Override WC_Settings_API Generate Title HTML.
+	 * add css, description_css, table_css, description_class & table_class definitions.
+	 *
+	 * @param  mixed $key as string form field key.
+	 * @param  mixed $data as field definition array.
+	 * @since  1.0.0
+	 * @return string
+	 */
+	public function generate_title_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'           => '',
+			'class'           => '',
+			'css'             => '',
+			'description_css' => '',
+			'table_css'       => '',
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		</table>
+		<h3 class="wc-settings-sub-title <?php echo esc_attr( $data['class'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" id="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></h3>
+		<?php if ( ! empty( $data['description'] ) ) : ?>
+			<div class="<?php echo $data['description_class']; ?>" style="<?php echo $data['description_css']; ?>"><?php echo wp_kses_post( $data['description'] ); ?></div>
+		<?php endif; ?>
+		<table class="form-table <?php echo $data['table_class']; ?>" style="<?php echo $data['table_css']; ?>">
+		<?php
+
+		return ob_get_clean();
+	}
 }

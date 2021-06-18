@@ -146,6 +146,14 @@ class Alma_WC_Plugin {
 
 		add_filter( 'plugin_action_links_' . plugin_basename( ALMA_WC_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 		add_action( 'wp_ajax_alma_dismiss_notice_message', array( $this, 'ajax_dismiss_notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'alma_admin_enqueue_scripts' ) );
+	}
+
+	/**
+	 * Enqueue scripts needed into admin form
+	 */
+	public function alma_admin_enqueue_scripts() {
+		wp_enqueue_script( 'jquery-effects-highlight' );
 	}
 
 	/**
