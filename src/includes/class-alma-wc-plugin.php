@@ -380,7 +380,9 @@ class Alma_WC_Plugin {
 	 */
 	private function run() {
 
-		$this->init_widget_handlers();
+		if ( $this->settings->is_enabled() ) {
+			$this->init_widget_handlers();
+		}
 
 		// Don't advertise our payment gateway if we're in test mode and current user is not an admin.
 		if ( $this->settings->get_environment() === 'test' && ! current_user_can( 'administrator' ) ) {
