@@ -526,7 +526,6 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 			'description'       => '',
 			'custom_attributes' => array(),
 			'options'           => array(),
-			'fee_plans'         => array(),
 		);
 
 		$data = wp_parse_args( $data, $defaults );
@@ -602,13 +601,6 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 					<?php echo $this->get_description_html( $data ); ?>
 				</fieldset>
 			</td>
-		</tr>
-		<tr>
-			<table>
-				<?php
-					$this->generate_settings_html( $data['fee_plans'] );
-				?>
-			</table>
 		</tr>
 		<?php
 

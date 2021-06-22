@@ -62,7 +62,7 @@ class Alma_WC_Admin_Form {
 	private function init_fee_plan_fields( $fee_plan, $default_settings, $selected ) {
 		$installments          = $fee_plan['installments_count'];
 		$key                   = $installments . 'x';
-		$class                 = "alma_fee_plan_{$key} alma_fee_plan";
+		$class                 = "alma_fee_plan_$key alma_fee_plan";
 		$css                   = $selected ? '' : 'display: none;';
 		$default_min_amount    = alma_wc_price_from_cents( $fee_plan['min_purchase_amount'] );
 		$default_max_amount    = alma_wc_price_from_cents( $fee_plan['max_purchase_amount'] );
@@ -225,9 +225,9 @@ class Alma_WC_Admin_Form {
 					'description' => sprintf( __( 'Choose which fee plan you want to modify<br>(only your <a href="%s" target="_blank">Alma dashboard</a> available fee plans are shown here).', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'conditions' ) ),
 					'default'     => $selected_fee_plan,
 					'options'     => $select_options,
-					'fee_plans'   => $fee_plans_fields,
 				),
-			)
+			),
+			$fee_plans_fields
 		);
 	}
 
