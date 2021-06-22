@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WooCommerce Alma Gateway\n"
-"POT-Creation-Date: 2021-06-22 14:45+0200\n"
-"PO-Revision-Date: 2021-06-22 14:48+0200\n"
+"POT-Creation-Date: 2021-06-22 15:40+0200\n"
+"PO-Revision-Date: 2021-06-22 15:43+0200\n"
 "Last-Translator: syjust <sy.just@gmail.com>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -120,12 +120,12 @@ msgstr "Sélectionnez une condition de paiement"
 #: includes/class-alma-wc-admin-form.php:225
 #, php-format
 msgid ""
-"Choose which fee plan you want to modify (only your <a href=\"%s\" target="
+"Choose which fee plan you want to modify<br>(only your <a href=\"%s\" target="
 "\"_blank\">Alma dashboard</a> available fee plans are shown here)."
 msgstr ""
-"Choisissez la condition de paiement que vous souhaitez modifier (seules les "
-"conditions de paiement disponibles sur votre <a href=\"%s\" target=\"_blank"
-"\">tableau de bord Alma</a> sont affichées ici)."
+"Choisissez la condition de paiement que vous souhaitez modifier<br>(seules "
+"les conditions de paiement disponibles sur votre <a href=\"%s\" target="
+"\"_blank\">tableau de bord Alma</a> sont affichées ici)."
 
 #: includes/class-alma-wc-admin-form.php:244
 msgid "→ General configuration"
@@ -360,7 +360,7 @@ msgstr ""
 "d’information."
 
 #. translators: %s: Alma dashboard url.
-#: includes/class-alma-wc-plugin.php:436
+#: includes/class-alma-wc-plugin.php:434
 #, php-format
 msgid ""
 "Could not connect to Alma using your API keys.<br>Please double check your "
@@ -371,13 +371,13 @@ msgstr ""
 "Alma</a>."
 
 #. translators: %s: Error message.
-#: includes/class-alma-wc-plugin.php:444
+#: includes/class-alma-wc-plugin.php:442
 #, php-format
 msgid "Alma encountered an error when fetching merchant status: %s"
 msgstr "Alma a rencontré une erreur en récupérant vos données marchand: %s"
 
 #. translators: %s: Alma dashboard url.
-#: includes/class-alma-wc-plugin.php:458
+#: includes/class-alma-wc-plugin.php:455
 #, php-format
 msgid ""
 "Your Alma account needs to be activated before you can use Alma on your shop."
@@ -389,11 +389,11 @@ msgstr ""
 "\">dashboard Alma</a> pour activer votre compte.<br><a href=\"%2$s"
 "\">Rafraîchissez la page</a> lorsque c’est fait."
 
-#: includes/class-alma-wc-plugin.php:554
+#: includes/class-alma-wc-plugin.php:551
 msgid "Settings"
 msgstr "Configuration"
 
-#: includes/class-alma-wc-plugin.php:583
+#: includes/class-alma-wc-plugin.php:580
 msgid ""
 "Payment validation error: no ID provided.<br>Please try again or contact us "
 "if the problem persists."
@@ -401,17 +401,29 @@ msgstr ""
 "Une erreur est survenue lors du traitement de votre paiement.<br>Réessayez "
 "ou contactez-nous si le problème persiste."
 
+#. translators: %s -> path to add after dashboard url
+#: includes/class-alma-wc-plugin.php:640
+#, php-format
+msgid "https://dashboard.getalma.eu/%s"
+msgstr "https://dashboard.getalma.eu/%s"
+
+#. translators: %s -> path to add after sandbox dashboard url
+#: includes/class-alma-wc-plugin.php:643
+#, php-format
+msgid "https://dashboard.sandbox.getalma.eu/%s"
+msgstr "https://dashboard.sandbox.getalma.eu/%s"
+
 # Default title for payment method on checkout page
-#: includes/class-alma-wc-settings.php:55
+#: includes/class-alma-wc-settings.php:56
 msgid "Monthly Payments with Alma"
 msgstr "Payer en plusieurs fois avec Alma"
 
 # Default payment method description
-#: includes/class-alma-wc-settings.php:56
+#: includes/class-alma-wc-settings.php:57
 msgid "Pay in multiple monthly payments with your credit card."
 msgstr "Payez en plusieurs fois avec votre carte bancaire."
 
-#: includes/class-alma-wc-settings.php:61
+#: includes/class-alma-wc-settings.php:62
 msgid "Some products cannot be paid with monthly installments"
 msgstr "Certains produits ne sont pas payables en plusieurs fois"
 

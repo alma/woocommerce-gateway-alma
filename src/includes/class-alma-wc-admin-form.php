@@ -151,7 +151,7 @@ class Alma_WC_Admin_Form {
 				'title'       => '<hr>' . $keys_title,
 				'type'        => 'title',
 				/* translators: %s Alma security URL */
-				'description' => sprintf( __( 'You can find your API keys on <a href="%s" target="_blank">your Alma dashboard</a>', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/security' ),
+				'description' => sprintf( __( 'You can find your API keys on <a href="%s" target="_blank">your Alma dashboard</a>', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'security' ) ),
 			),
 			'live_api_key' => array(
 				'title' => __( 'Live API key', 'alma-woocommerce-gateway' ),
@@ -197,7 +197,7 @@ class Alma_WC_Admin_Form {
 			$select_options = $this->generate_select_options( $fee_plans );
 			if ( count( $select_options ) === 0 ) {
 				/* translators: %s: Alma conditions URL */
-				$title_field['fee_plan_section']['description'] = sprintf( __( '⚠ There is no fee plan allowed in your <a href="%s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/conditions' );
+				$title_field['fee_plan_section']['description'] = sprintf( __( '⚠ There is no fee plan allowed in your <a href="%s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'conditions' ) );
 
 				return $title_field;
 			}
@@ -222,7 +222,7 @@ class Alma_WC_Admin_Form {
 					'title'       => __( 'Select a fee plan to update', 'alma-woocommerce-gateway' ),
 					'type'        => 'select_alma_fee_plan',
 					/* translators: %s: Alma conditions URL */
-					'description' => sprintf( __( 'Choose which fee plan you want to modify (only your <a href="%s" target="_blank">Alma dashboard</a> available fee plans are shown here).', 'alma-woocommerce-gateway' ), 'https://dashboard.getalma.eu/conditions' ),
+					'description' => sprintf( __( 'Choose which fee plan you want to modify<br>(only your <a href="%s" target="_blank">Alma dashboard</a> available fee plans are shown here).', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'conditions' ) ),
 					'default'     => $selected_fee_plan,
 					'options'     => $select_options,
 					'fee_plans'   => $fee_plans_fields,
