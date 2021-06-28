@@ -7,6 +7,7 @@ v1.x.x
 * Add autoloader
 * Minor refactorisations
 * Root tree refactorisation
+* Re-design back-office fee plans configuration
 
 v1.3.0
 ------

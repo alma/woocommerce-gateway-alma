@@ -88,6 +88,7 @@ To build extension for production run `./bin/build.sh`
 * Add autoloader
 * Minor refactorisations
 * Root tree refactorisation
+* Re-design back-office fee plans configuration
 
 = 1.3.0 =
 
