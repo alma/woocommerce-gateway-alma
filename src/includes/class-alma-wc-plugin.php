@@ -146,6 +146,27 @@ class Alma_WC_Plugin {
 
 		add_filter( 'plugin_action_links_' . plugin_basename( ALMA_WC_PLUGIN_FILE ), array( $this, 'plugin_action_links' ) );
 		add_action( 'wp_ajax_alma_dismiss_notice_message', array( $this, 'ajax_dismiss_notice' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'alma_admin_enqueue_scripts' ) );
+	}
+
+	/**
+	 * Enqueue scripts needed into admin form
+	 */
+	public function alma_admin_enqueue_scripts() {
+		wp_enqueue_style(
+			'alma-admin-styles',
+			alma_wc_plugin()->get_asset_url( 'css/alma-admin.css' ),
+			array(),
+			ALMA_WC_VERSION
+		);
+
+		wp_enqueue_script(
+			'alma-admin-scripts',
+			alma_wc_plugin()->get_asset_url( 'js/alma-admin.js' ),
+			array( 'jquery-effects-highlight' ),
+			ALMA_WC_VERSION,
+			true
+		);
 	}
 
 	/**
@@ -380,7 +401,9 @@ class Alma_WC_Plugin {
 	 */
 	private function run() {
 
-		$this->init_widget_handlers();
+		if ( $this->settings->is_enabled() ) {
+			$this->init_widget_handlers();
+		}
 
 		// Don't advertise our payment gateway if we're in test mode and current user is not an admin.
 		if ( $this->settings->get_environment() === 'test' && ! current_user_can( 'administrator' ) ) {
@@ -418,13 +441,11 @@ class Alma_WC_Plugin {
 			$merchant = $alma->merchants->me();
 		} catch ( RequestError $e ) {
 			if ( $e->response && 401 === $e->response->responseCode ) {
-				$dashboard_url = 'https://dashboard.getalma.eu/security';
-
 				throw new Exception(
 					sprintf(
 						// translators: %s: Alma dashboard url.
 						__( 'Could not connect to Alma using your API keys.<br>Please double check your keys on your <a href="%1$s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ),
-						$dashboard_url
+						$this->get_alma_dashboard_url( 'security' )
 					)
 				);
 			} else {
@@ -441,12 +462,11 @@ class Alma_WC_Plugin {
 		}
 
 		if ( ! $merchant->can_create_payments ) {
-			$dashboard_url = 'https://dashboard.getalma.eu/settings';
 			throw new Exception(
 				sprintf(
 					// translators: %s: Alma dashboard url.
 					__( 'Your Alma account needs to be activated before you can use Alma on your shop.<br>Go to your <a href="%1$s" target="_blank">Alma dashboard</a> to activate your account.<br><a href="%2$s">Refresh</a> the page when ready.', 'alma-woocommerce-gateway' ),
-					esc_url( $dashboard_url ),
+					$this->get_alma_dashboard_url( 'settings' ),
 					esc_url( $settings_url )
 				)
 			);
@@ -618,5 +638,21 @@ class Alma_WC_Plugin {
 			$e = $e->getPrevious();
 			$cnt++;
 		} while ( $e );
+	}
+
+	/**
+	 * Get Alma full URL depends on test or live mode (sandbox or not)
+	 *
+	 * @param string $path as path to add after default scheme://host/ infos.
+	 *
+	 * @return string as full URL
+	 */
+	public function get_alma_dashboard_url( $path = '' ) {
+		if ( $this->settings->is_live() ) {
+			/* translators: %s -> path to add after dashboard url */
+			return esc_url( sprintf( __( 'https://dashboard.getalma.eu/%s', 'alma-woocommerce-gateway' ), $path ) );
+		}
+		/* translators: %s -> path to add after sandbox dashboard url */
+		return esc_url( sprintf( __( 'https://dashboard.sandbox.getalma.eu/%s', 'alma-woocommerce-gateway' ), $path ) );
 	}
 }

@@ -1,0 +1,40 @@
+.alma_fee_plan {
+	padding-left: 6px;
+	border-left: solid 2px lightgrey;
+}
+h3.alma_fee_plan {
+	padding-top: 15px;
+	padding-bottom: 15px;
+}
+div.alma_fee_plan,
+.woocommerce table.form-table.alma_fee_plan
+{
+	margin-top: -15px;
+}
+.woocommerce table.form-table.alma_fee_plan tr:first-child th {
+	padding-top: 35px;
+}
+@media(max-width: 782px) {
+	.woocommerce table.form-table.alma_fee_plan th,
+	.woocommerce table.form-table.alma_fee_plan td {
+		padding-left: 6px;
+		border-left: solid 1px lightgrey;
+	}
+	.woocommerce table.form-table.alma_fee_plan,
+	.alma_fee_plan {
+		margin-left: 36px;
+	}
+}
+@media(min-width: 783px) {
+	.woocommerce table.form-table.alma_fee_plan tr:first-child td {
+		padding-top: 30px;
+	}
+	.woocommerce table.form-table.alma_fee_plan th {
+		padding-left: 6px;
+		border-left: solid 2px lightgrey;
+	}
+	.woocommerce table.form-table.alma_fee_plan,
+	.alma_fee_plan {
+		margin-left: 236px;
+	}
+}

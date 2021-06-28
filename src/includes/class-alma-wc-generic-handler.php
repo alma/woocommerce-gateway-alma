@@ -111,7 +111,7 @@ class Alma_WC_Generic_Handler {
 		}
 
 		$enabled_plans = $this->settings->enabled_pnx_plans();
-		$api_mode      = $this->settings->environment;
+		$api_mode      = $this->settings->get_environment();
 
 		$widget_settings = array(
 			'hasExcludedProducts' => $has_excluded_products,

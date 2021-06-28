@@ -502,4 +502,61 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 
 		return end( $pnx_list );
 	}
+
+	/**
+	 * Generate a select `alma_fee` Input HTML (based on `select_alma_fee_plan` field definition).
+	 * Warning: use only one `select_alma_fee_plan` type in your form (script & css are inlined here)
+	 *
+	 * @param  mixed $key as field key.
+	 * @param  mixed $data as field configuration.
+	 *
+	 * @return string
+	 * @see WC_Settings_API::generate_settings_html() that calls dynamically generate_<field_type>_html
+	 */
+	public function generate_select_alma_fee_plan_html( $key, $data ) {
+		$select_id = $this->get_field_key( $key );
+		?>
+		<script>
+			var select_alma_fee_plan_ids = select_alma_fee_plan_ids || [];
+			select_alma_fee_plan_ids.push('<?php echo esc_attr( $select_id ); ?>')
+		</script>
+		<?php
+		return parent::generate_select_html( $key, $data );
+	}
+
+	/**
+	 * Override WC_Settings_API Generate Title HTML.
+	 * add css, description_css, table_css, description_class & table_class definitions.
+	 *
+	 * @param  mixed $key as string form field key.
+	 * @param  mixed $data as field definition array.
+	 * @since  1.0.0
+	 * @return string
+	 */
+	public function generate_title_html( $key, $data ) {
+		$field_key = $this->get_field_key( $key );
+		$defaults  = array(
+			'title'             => '',
+			'class'             => '',
+			'css'               => '',
+			'table_class'       => '',
+			'table_css'         => '',
+			'description_class' => '',
+			'description_css'   => '',
+		);
+
+		$data = wp_parse_args( $data, $defaults );
+
+		ob_start();
+		?>
+		</table>
+		<h3 class="wc-settings-sub-title <?php echo esc_attr( $data['class'] ); ?>" style="<?php echo esc_attr( $data['css'] ); ?>" id="<?php echo esc_attr( $field_key ); ?>"><?php echo wp_kses_post( $data['title'] ); ?></h3>
+		<?php if ( ! empty( $data['description'] ) ) : ?>
+			<div class="<?php echo esc_attr( $data['description_class'] ); ?>" style="<?php echo esc_attr( $data['description_css'] ); ?>"><?php echo wp_kses_post( $data['description'] ); ?></div>
+		<?php endif; ?>
+		<table class="form-table <?php echo esc_attr( $data['table_class'] ); ?>" style="<?php echo esc_attr( $data['table_css'] ); ?>">
+		<?php
+
+		return ob_get_clean();
+	}
 }
