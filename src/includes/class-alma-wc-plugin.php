@@ -153,7 +153,20 @@ class Alma_WC_Plugin {
 	 * Enqueue scripts needed into admin form
 	 */
 	public function alma_admin_enqueue_scripts() {
-		wp_enqueue_script( 'jquery-effects-highlight' );
+		wp_enqueue_style(
+			'alma-admin-styles',
+			alma_wc_plugin()->get_asset_url( 'css/alma-admin.css' ),
+			array(),
+			ALMA_WC_VERSION
+		);
+
+		wp_enqueue_script(
+			'alma-admin-scripts',
+			alma_wc_plugin()->get_asset_url( 'js/alma-admin.js' ),
+			array( 'jquery-effects-highlight' ),
+			ALMA_WC_VERSION,
+			true
+		);
 	}
 
 	/**
