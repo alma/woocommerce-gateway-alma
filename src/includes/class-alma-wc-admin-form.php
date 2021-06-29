@@ -201,7 +201,7 @@ class Alma_WC_Admin_Form {
 
 				return $title_field;
 			}
-			$selected_fee_plan = $this->generate_selected_free_plan_key( $select_options, $default_settings );
+			$selected_fee_plan = $this->generate_selected_fee_plan_key( $select_options, $default_settings );
 			foreach ( $fee_plans as $fee_plan ) {
 				if ( $fee_plan['allowed'] ) {
 					$fee_plan_key     = $fee_plan['installments_count'] . 'x';
@@ -453,7 +453,7 @@ class Alma_WC_Admin_Form {
 	 *
 	 * @return string
 	 */
-	private function generate_selected_free_plan_key( array $select_options, $default_settings ) {
+	private function generate_selected_fee_plan_key( array $select_options, $default_settings ) {
 		$selected_fee_plan   = alma_wc_plugin()->settings->selected_fee_plan ? alma_wc_plugin()->settings->selected_fee_plan : $default_settings['selected_fee_plan'];
 		$select_options_keys = array_keys( $select_options );
 
