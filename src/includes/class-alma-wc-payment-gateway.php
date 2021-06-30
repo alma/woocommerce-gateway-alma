@@ -214,19 +214,19 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	/**
 	 * Output HTML for a single payment field.
 	 *
-	 * @param int     $n                    Installments count.
+	 * @param int     $installment          Installments count.
 	 * @param boolean $with_radio_button    Include a radio button for plan selection.
 	 * @param boolean $checked              Should the radio button be checked.
 	 */
-	private function payment_field( $n, $with_radio_button, $checked ) {
+	private function payment_field( $installment, $with_radio_button, $checked ) {
 		$plan_class = '.' . self::ALMA_PAYMENT_PLAN_TABLE_CSS_CLASS;
-		$plan_id    = '#' . sprintf( self::ALMA_PAYMENT_PLAN_TABLE_ID_TEMPLATE, $n );
-		$logo_url   = alma_wc_plugin()->get_asset_url( "images/p${n}x_logo.svg" );
+		$plan_id    = '#' . sprintf( self::ALMA_PAYMENT_PLAN_TABLE_ID_TEMPLATE, $installment );
+		$logo_url   = alma_wc_plugin()->get_asset_url( "images/p${installment}x_logo.svg" );
 		?>
 		<input
 				type="<?php echo $with_radio_button ? 'radio' : 'hidden'; ?>"
-				value="<?php echo esc_attr( $n ); ?>"
-				id="alma_installments_count_<?php echo esc_attr( $n ); ?>"
+				value="<?php echo esc_attr( $installment ); ?>"
+				id="alma_installments_count_<?php echo esc_attr( $installment ); ?>"
 				name="alma_installments_count"
 
 				<?php if ( $with_radio_button ) : ?>
@@ -238,14 +238,14 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 		<label
 				class="checkbox"
 				style="margin-right: 10px; display: inline;"
-				for="alma_installments_count_<?php echo esc_attr( $n ); ?>"
+				for="alma_installments_count_<?php echo esc_attr( $installment ); ?>"
 		>
 			<img src="<?php echo esc_attr( $logo_url ); ?>"
 				style="float: unset !important; width: auto !important; height: 30px !important;  border: none !important; vertical-align: middle; display: inline-block;"
 				alt="
 					<?php
 					// translators: %d: number of installments.
-					echo sprintf( esc_html__( '%d installments', 'alma-woocommerce-gateway' ), esc_html( $n ) );
+					echo sprintf( esc_html__( '%d installments', 'alma-woocommerce-gateway' ), esc_html( $installment ) );
 					?>
 					">
 		</label>
@@ -270,8 +270,8 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 		?>
 		<p>
 			<?php
-			foreach ( $eligible_installments as $n ) {
-				$this->payment_field( $n, $multiple_plans, $n === $default_installments );
+			foreach ( $eligible_installments as $installment ) {
+				$this->payment_field( $installment, $multiple_plans, $installment === $default_installments );
 			}
 
 			$this->render_payment_plan( $default_installments );
@@ -399,14 +399,14 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	private function render_payment_plan( $default_installments ) {
 		$eligibilities = $this->get_cart_eligibilities();
 		if ( $eligibilities ) {
-			foreach ( $eligibilities as $n => $plan ) {
+			foreach ( $eligibilities as $installments => $plan ) {
 				?>
 				<div
-					id="<?php echo esc_attr( sprintf( self::ALMA_PAYMENT_PLAN_TABLE_ID_TEMPLATE, $n ) ); ?>"
+					id="<?php echo esc_attr( sprintf( self::ALMA_PAYMENT_PLAN_TABLE_ID_TEMPLATE, $installments ) ); ?>"
 					class="<?php echo esc_attr( self::ALMA_PAYMENT_PLAN_TABLE_CSS_CLASS ); ?>"
 					style="
 						margin: 0 auto;
-						<?php if ( $n !== $default_installments ) { ?>
+						<?php if ( $installments !== $default_installments ) { ?>
 						display: none;
 						<?php	} ?>
 					"
@@ -453,8 +453,8 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 
 			try {
 				$this->eligibilities = $alma->payments->eligibility( Alma_WC_Model_Payment::from_cart() );
-			} catch ( RequestError $e ) {
-				$this->logger->log_stack_trace( 'Error while checking payment eligibility: ', $e );
+			} catch ( RequestError $error ) {
+				$this->logger->log_stack_trace( 'Error while checking payment eligibility: ', $error );
 				return null;
 			}
 		}

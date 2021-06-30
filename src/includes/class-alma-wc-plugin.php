@@ -642,8 +642,8 @@ class Alma_WC_Plugin {
 			$this->settings->fully_configured = true;
 
 			$this->settings->save();
-		} catch ( Exception $e ) {
-			$this->handle_settings_exception( $e );
+		} catch ( Exception $exception ) {
+			$this->handle_settings_exception( $exception );
 		}
 	}
 }
