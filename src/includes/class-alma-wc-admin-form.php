@@ -62,7 +62,11 @@ class Alma_WC_Admin_Form {
 	private function init_fee_plan_fields( $fee_plan, $default_settings, $selected ) {
 		$installments          = $fee_plan['installments_count'];
 		$key                   = $installments . 'x';
-		$class                 = "alma_fee_plan_$key alma_fee_plan";
+		$min_amount_key        = 'min_amount_' . $key;
+		$section_key           = $key . '_section';
+		$max_amount_key        = 'max_amount_' . $key;
+		$enabled_key           = 'enabled_' . $key;
+		$class                 = 'alma_fee_plan alma_fee_plan_' . $key;
 		$css                   = $selected ? '' : 'display: none;';
 		$default_min_amount    = alma_wc_price_from_cents( $fee_plan['min_purchase_amount'] );
 		$default_max_amount    = alma_wc_price_from_cents( $fee_plan['max_purchase_amount'] );
@@ -70,9 +74,16 @@ class Alma_WC_Admin_Form {
 		$merchant_fee_variable = $fee_plan['merchant_fee_variable'] / 100; // percent.
 		$customer_fee_fixed    = alma_wc_price_from_cents( $fee_plan['customer_fee_fixed'] );
 		$customer_fee_variable = $fee_plan['customer_fee_variable'] / 100; // percent.
+		$default_enabled       = $default_settings['selected_fee_plan'] === $key ? 'Yes' : 'No';
+		$custom_attributes     = array(
+			'required' => 'required',
+			'min'      => $default_min_amount,
+			'max'      => $default_max_amount,
+			'step'     => 0.01,
+		);
 
 		return array(
-			"${installments}x_section"    => array(
+			$section_key    => array(
 				// translators: %d: number of installments.
 				'title'             => sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $fee_plan['installments_count'] ),
 				'type'              => 'title',
@@ -84,35 +95,25 @@ class Alma_WC_Admin_Form {
 				'description_css'   => $css,
 				'table_css'         => $css,
 			),
-			"enabled_${installments}x"    => array(
+			$enabled_key    => array(
 				'title'   => __( 'Enable/Disable', 'alma-woocommerce-gateway' ),
 				'type'    => 'checkbox',
 				// translators: %d: number of installments.
 				'label'   => sprintf( __( 'Enable %d-installment payments with Alma', 'alma-woocommerce-gateway' ), $installments ),
-				'default' => $default_settings[ "enabled_${installments}x" ],
+				'default' => $default_enabled,
 			),
-			"min_amount_${installments}x" => array(
+			$min_amount_key => array(
 				'title'             => __( 'Minimum amount', 'alma-woocommerce-gateway' ),
 				'type'              => 'number',
 				'css'               => 'width: 100px;',
-				'custom_attributes' => array(
-					'required' => 'required',
-					'min'      => $default_min_amount,
-					'max'      => $default_max_amount,
-					'step'     => 0.01,
-				),
+				'custom_attributes' => $custom_attributes,
 				'default'           => $default_min_amount,
 			),
-			"max_amount_${installments}x" => array(
+			$max_amount_key => array(
 				'title'             => __( 'Maximum amount', 'alma-woocommerce-gateway' ),
 				'type'              => 'number',
 				'css'               => 'width: 100px;',
-				'custom_attributes' => array(
-					'required' => 'required',
-					'min'      => $default_min_amount,
-					'max'      => $default_max_amount,
-					'step'     => 0.01,
-				),
+				'custom_attributes' => $custom_attributes,
 				'default'           => $default_max_amount,
 			),
 		);
