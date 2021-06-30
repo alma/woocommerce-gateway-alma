@@ -73,22 +73,19 @@ class Alma_WC_Product_Handler extends Alma_WC_Generic_Handler {
 		}
 		$amount_query_selector = null;
 		$jquery_update_event   = null;
-		$first_render          = true;
 
 		$is_variable_product = $product->get_type() === 'variable';
 
 		if ( $is_variable_product ) {
 			$amount_query_selector = alma_wc_plugin()->settings->variable_product_price_query_selector;
 			$jquery_update_event   = self::JQUERY_VARIABLE_PRODUCT_UPDATE_EVENT;
-			$first_render          = true;
 		}
 
 		$this->inject_payment_plan_widget(
 			$has_excluded_products,
 			alma_wc_price_to_cents( $price ),
 			$jquery_update_event,
-			$amount_query_selector,
-			$first_render
+			$amount_query_selector
 		);
 	}
 }

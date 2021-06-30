@@ -84,17 +84,14 @@ class Alma_WC_Generic_Handler {
 	 * @param int         $amount Amount.
 	 * @param string|null $jquery_update_event Jquery update event.
 	 * @param string|null $amount_query_selector Amount query selector.
-	 * @param bool        $first_render First render.
 	 *
 	 * @return void
-	 * @TODO verify if amount_query_selector is really useful
 	 */
 	protected function inject_payment_plan_widget(
 		$has_excluded_products,
 		$amount = 0,
 		$jquery_update_event = null,
-		$amount_query_selector = null,
-		$first_render = true
+		$amount_query_selector = null
 	) {
 		if ( $this->is_already_rendered() ) {
 			$this->logger->info( $this->get_eligibility_widget_already_rendered_message() );
@@ -121,7 +118,7 @@ class Alma_WC_Generic_Handler {
 			'enabledPlans'        => $enabled_plans,
 			'amountQuerySelector' => $amount_query_selector,
 			'jqueryUpdateEvent'   => $jquery_update_event,
-			'firstRender'         => $first_render,
+			'firstRender'         => true,
 			'decimalSeparator'    => wc_get_price_decimal_separator(),
 			'thousandSeparator'   => wc_get_price_thousand_separator(),
 		);
