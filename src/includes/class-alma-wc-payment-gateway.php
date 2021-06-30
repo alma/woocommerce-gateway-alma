@@ -202,20 +202,8 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 
-		if (
-			array_key_exists( 'excluded_products_list', $this->settings ) &&
-			is_array( $this->settings['excluded_products_list'] ) &&
-			count( $this->settings['excluded_products_list'] ) > 0
-		) {
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				$product_id = $cart_item['product_id'];
-
-				foreach ( $this->settings['excluded_products_list'] as $category_slug ) {
-					if ( has_term( $category_slug, 'product_cat', $product_id ) ) {
-						return false;
-					}
-				}
-			}
+		if ( $this->cart_contains_excluded_category() ) {
+			return false;
 		}
 
 		$eligibilities = $this->get_cart_eligibilities();
@@ -558,5 +546,33 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 		<?php
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Check if there is some excluded products into cart
+	 *
+	 * @return bool
+	 */
+	private function cart_contains_excluded_category() {
+		if ( wc()->cart === null ) {
+			return false;
+		}
+		if (
+			array_key_exists( 'excluded_products_list', $this->settings ) &&
+			is_array( $this->settings['excluded_products_list'] ) &&
+			count( $this->settings['excluded_products_list'] ) > 0
+		) {
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				$product_id = $cart_item['product_id'];
+
+				foreach ( $this->settings['excluded_products_list'] as $category_slug ) {
+					if ( has_term( $category_slug, 'product_cat', $product_id ) ) {
+						return true;
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 }
