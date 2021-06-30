@@ -101,7 +101,7 @@ class Alma_WC_Plugin {
 			$this->alma_client->addUserAgentComponent( 'Alma for WooCommerce', ALMA_WC_VERSION );
 		} catch ( \Exception $e ) {
 			if ( $this->settings->is_logging_enabled() ) {
-				$this->log_stack_trace( 'Error creating Alma API client', $e );
+				$this->logger->log_stack_trace( 'Error creating Alma API client', $e );
 			}
 		}
 	}
@@ -621,23 +621,6 @@ class Alma_WC_Plugin {
 		$payment_id = $this->get_payment_to_validate();
 		$gateway    = new Alma_WC_Payment_Gateway();
 		$gateway->validate_payment_from_ipn( $payment_id );
-	}
-
-	/**
-	 * Log all exceptions stack trace prefixed with an error message.
-	 *
-	 * @param string    $message as base error message to log.
-	 * @param Exception $e as exception to log.
-	 */
-	public function log_stack_trace( $message, Exception $e ) {
-		$cnt = 0;
-		do {
-			$this->logger->error( sprintf( '%s#%s', $message, $cnt ) );
-			$this->logger->error( $e->getMessage() );
-			$this->logger->error( $e->getTraceAsString() );
-			$e = $e->getPrevious();
-			$cnt++;
-		} while ( $e );
 	}
 
 	/**

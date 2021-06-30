@@ -5,6 +5,7 @@
  * @package Alma_WooCommerce_Gateway
  */
 
+use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -14,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Alma_WC_Logger
  */
-class Alma_WC_Logger extends \Psr\Log\AbstractLogger {
+class Alma_WC_Logger extends AbstractLogger {
 
 	const LOG_HANDLE = 'alma';
 
@@ -40,7 +41,7 @@ class Alma_WC_Logger extends \Psr\Log\AbstractLogger {
 	 *
 	 * @return void
 	 */
-	public function log( $level, $message, array $context = array() ) {
+	public function log( $level, $message, array $context = array() ) { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter
 		if ( ! is_callable( 'wc' ) || ( alma_wc_plugin()->settings && ! alma_wc_plugin()->settings->is_logging_enabled() ) ) {
 			return;
 		}
@@ -67,4 +68,22 @@ class Alma_WC_Logger extends \Psr\Log\AbstractLogger {
 			$logger->$method( $message, array( 'source' => self::LOG_HANDLE ) );
 		}
 	}
+
+	/**
+	 * Log all exceptions stack trace prefixed with an error message.
+	 *
+	 * @param string    $message as base error message to log.
+	 * @param Exception $e as exception to log.
+	 */
+	public function log_stack_trace( $message, Exception $e ) {
+		$cnt = 0;
+		do {
+			$this->error( sprintf( '%s#%s', $message, $cnt ) );
+			$this->error( $e->getMessage() );
+			$this->error( $e->getTraceAsString() );
+			$e = $e->getPrevious();
+			$cnt++;
+		} while ( $e );
+	}
+
 }

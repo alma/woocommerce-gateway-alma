@@ -476,7 +476,7 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 			try {
 				$this->eligibilities = $alma->payments->eligibility( Alma_WC_Model_Payment::from_cart() );
 			} catch ( RequestError $e ) {
-				alma_wc_plugin()->log_stack_trace( 'Error while checking payment eligibility: ', $e );
+				$this->logger->log_stack_trace( 'Error while checking payment eligibility: ', $e );
 				return null;
 			}
 		}
