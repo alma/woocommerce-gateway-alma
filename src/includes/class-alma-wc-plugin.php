@@ -199,7 +199,7 @@ class Alma_WC_Plugin {
 				add_action(
 					'admin_notices',
 					function () {
-						$this->check_settings( false );
+						$this->check_settings();
 					}
 				);
 			}
@@ -298,29 +298,15 @@ class Alma_WC_Plugin {
 	/**
 	 * Check settings.
 	 *
-	 * @param bool $force Force re-check.
-	 *
 	 * @return void
+	 * @see self::force_check_settings()
 	 */
-	public function check_settings( $force = true ) {
-		if ( ( $this->settings->fully_configured || get_option( 'alma_warnings_handled' ) ) && ! $force ) {
+	public function check_settings() {
+		if ( ( $this->settings->fully_configured || get_option( 'alma_warnings_handled' ) ) ) {
 			return;
 		}
 
-		try {
-			update_option( 'alma_warnings_handled', false );
-			$this->settings->fully_configured = false;
-
-			$this->check_activation();
-			$this->check_credentials();
-			$this->check_merchant_status();
-
-			$this->settings->fully_configured = true;
-
-			$this->settings->save();
-		} catch ( Exception $e ) {
-			$this->handle_settings_exception( $e );
-		}
+		$this->force_check_settings();
 	}
 
 	/**
@@ -637,5 +623,27 @@ class Alma_WC_Plugin {
 		}
 		/* translators: %s -> path to add after sandbox dashboard url */
 		return esc_url( sprintf( __( 'https://dashboard.sandbox.getalma.eu/%s', 'alma-woocommerce-gateway' ), $path ) );
+	}
+
+	/**
+	 * Force Check settings.
+	 *
+	 * @return void
+	 */
+	public function force_check_settings() {
+		try {
+			update_option( 'alma_warnings_handled', false );
+			$this->settings->fully_configured = false;
+
+			$this->check_activation();
+			$this->check_credentials();
+			$this->check_merchant_status();
+
+			$this->settings->fully_configured = true;
+
+			$this->settings->save();
+		} catch ( Exception $e ) {
+			$this->handle_settings_exception( $e );
+		}
 	}
 }
