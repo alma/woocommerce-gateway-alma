@@ -163,7 +163,7 @@ class Alma_WC_Settings {
 	 *
 	 * @return string
 	 */
-	public function get_live_api_key() {
+	protected function get_live_api_key() {
 		return $this->live_api_key;
 	}
 
@@ -172,7 +172,7 @@ class Alma_WC_Settings {
 	 *
 	 * @return string
 	 */
-	public function get_test_api_key() {
+	protected function get_test_api_key() {
 		return $this->test_api_key;
 	}
 
@@ -210,7 +210,7 @@ class Alma_WC_Settings {
 	 *
 	 * @return bool
 	 */
-	public function is_pnx_enabled( $installments ) {
+	private function is_pnx_enabled( $installments ) {
 		return 'yes' === $this->__get( "enabled_${installments}x" );
 	}
 
