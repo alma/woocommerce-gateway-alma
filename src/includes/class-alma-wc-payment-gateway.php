@@ -206,17 +206,7 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 			return false;
 		}
 
-		$eligibilities = $this->get_cart_eligibilities();
-
-		if ( ! $eligibilities ) {
-			return false;
-		}
-
-		$is_eligible = false;
-
-		foreach ( $eligibilities as $plan ) {
-			$is_eligible = $is_eligible || $plan->isEligible; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
-		}
+		$is_eligible = $this->is_cart_eligible();
 
 		return $is_eligible && parent::is_available();
 	}
@@ -574,5 +564,26 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check cart eligibilities
+	 *
+	 * @return bool
+	 */
+	private function is_cart_eligible() {
+		$eligibilities = $this->get_cart_eligibilities();
+
+		if ( ! $eligibilities ) {
+			return false;
+		}
+
+		$is_eligible = false;
+
+		foreach ( $eligibilities as $plan ) {
+			$is_eligible = $is_eligible || $plan->isEligible; // phpcs:ignore WordPress.NamingConventions.ValidVariableName
+		}
+
+		return $is_eligible;
 	}
 }
