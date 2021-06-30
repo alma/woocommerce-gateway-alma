@@ -119,21 +119,14 @@ class Alma_WC_Settings {
 
 	/**
 	 * Load settings from DB.
-	 *
-	 * @param bool $force_reload Force reload settings.
-	 *
-	 * @return Alma_WC_Settings Instance of Alma_Settings
-	 * @TODO use alma_client->merchant->feePlans() here ?
 	 */
-	public function load( $force_reload = false ) {
-		if ( $this->are_settings_loaded && ! $force_reload ) {
-			return $this;
+	protected function load() {
+		if ( $this->are_settings_loaded ) {
+			return;
 		}
 		$settings                  = (array) get_option( self::OPTIONS_KEY, array() );
 		$this->settings            = array_merge( self::default_settings(), $settings );
 		$this->are_settings_loaded = true;
-
-		return $this;
 	}
 
 	/**
