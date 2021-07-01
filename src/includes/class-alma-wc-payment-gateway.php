@@ -490,6 +490,7 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	 *
 	 * @return string
 	 * @see WC_Settings_API::generate_settings_html() that calls dynamically generate_<field_type>_html
+	 * @noinspection PhpUnused
 	 */
 	public function generate_select_alma_fee_plan_html( $key, $data ) {
 		$select_id = $this->get_field_key( $key );

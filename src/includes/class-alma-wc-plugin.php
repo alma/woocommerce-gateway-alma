@@ -86,7 +86,7 @@ class Alma_WC_Plugin {
 	 *
 	 * @return void
 	 */
-	public function init_alma_client() {
+	private function init_alma_client() {
 		try {
 			$this->alma_client = new Client(
 				$this->settings->get_active_api_key(),
@@ -196,12 +196,7 @@ class Alma_WC_Plugin {
 				// Defer settings check to after potential settings update.
 				update_option( 'alma_warnings_handled', false );
 				$this->settings->save();
-				add_action(
-					'admin_notices',
-					function () {
-						$this->check_settings();
-					}
-				);
+				add_action( 'admin_notices', array( $this, 'check_settings' ) );
 			}
 		} catch ( Exception $e ) {
 			$this->logger->error( 'Bootstrap error: ' . $e->getMessage() );
@@ -212,17 +207,17 @@ class Alma_WC_Plugin {
 	/**
 	 * Handle settings exception.
 	 *
-	 * @param \Exception $e Exception.
+	 * @param \Exception $exception Exception.
 	 *
 	 * @return void
 	 */
-	public function handle_settings_exception( $e ) {
+	public function handle_settings_exception( $exception ) {
 		if ( get_option( 'alma_warnings_handled' ) ) {
 			return;
 		}
 
 		delete_option( 'alma_bootstrap_warning_message_dismissed' );
-		update_option( 'alma_bootstrap_warning_message', $e->getMessage() );
+		update_option( 'alma_bootstrap_warning_message', $exception->getMessage() );
 
 		add_action( 'admin_notices', array( $this, 'show_settings_warning' ) );
 
@@ -410,15 +405,13 @@ class Alma_WC_Plugin {
 		$alma = $this->get_alma_client();
 
 		$settings_url = $this->get_admin_setting_url();
-		$logs_url     = $this->get_admin_logs_url();
-
 		if ( ! $alma ) {
 			throw new Exception(
 				sprintf(
-					// translators: %1%s: Admin settings url, %s: Admin logs url.
+					// translators: %1$s: Admin settings url, %2$s: Admin logs url.
 					__( 'Error while initializing Alma API client.<br><a href="%1$s">Activate debug mode</a> and <a href="%2$s">check logs</a> for more details.', 'alma-woocommerce-gateway' ),
 					esc_url( $settings_url ),
-					esc_url( $logs_url )
+					esc_url( $this->get_admin_logs_url() )
 				)
 			);
 		}

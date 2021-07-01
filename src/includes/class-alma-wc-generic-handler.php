@@ -107,15 +107,12 @@ class Alma_WC_Generic_Handler {
 			return;
 		}
 
-		$enabled_plans = $this->settings->enabled_pnx_plans();
-		$api_mode      = $this->settings->get_environment();
-
 		$widget_settings = array(
 			'hasExcludedProducts' => $has_excluded_products,
 			'merchantId'          => $merchant_id,
-			'apiMode'             => $api_mode,
+			'apiMode'             => $this->settings->get_environment(),
 			'amount'              => $amount,
-			'enabledPlans'        => $enabled_plans,
+			'enabledPlans'        => $this->settings->enabled_pnx_plans(),
 			'amountQuerySelector' => $amount_query_selector,
 			'jqueryUpdateEvent'   => $jquery_update_event,
 			'firstRender'         => true,
