@@ -7,6 +7,8 @@
  */
 
 use Alma\API\Client;
+use Alma\API\Entities\FeePlan;
+use Alma\API\Entities\Merchant;
 use Alma\API\RequestError;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -46,6 +48,13 @@ class Alma_WC_Plugin {
 	private $logger;
 
 	/**
+	 * Instance of current Merchant (if any)
+	 *
+	 * @var Merchant|null
+	 */
+	private $alma_merchant;
+
+	/**
 	 * __construct
 	 *
 	 * @return void
@@ -53,6 +62,26 @@ class Alma_WC_Plugin {
 	public function __construct() {
 		$this->logger = new Alma_WC_Logger();
 		$this->self_update();
+	}
+
+	/**
+	 * Retrieve Merchant from Alma API
+	 *
+	 * @return Merchant|null
+	 *
+	 * @throws RequestError On API exception.
+	 */
+	public function get_merchant() {
+		if ( $this->alma_merchant ) {
+			return $this->alma_merchant;
+		}
+		$client = $this->get_alma_client();
+		if ( ! $client ) {
+			return null;
+		}
+		$this->alma_merchant = $client->merchants->me();
+
+		return $this->alma_merchant;
 	}
 
 	/**
@@ -417,7 +446,7 @@ class Alma_WC_Plugin {
 		}
 
 		try {
-			$merchant = $alma->merchants->me();
+			$merchant = $this->get_merchant();
 		} catch ( RequestError $e ) {
 			if ( $e->response && 401 === $e->response->responseCode ) {
 				throw new Exception(
@@ -638,5 +667,20 @@ class Alma_WC_Plugin {
 		} catch ( Exception $exception ) {
 			$this->handle_settings_exception( $exception );
 		}
+	}
+
+	/**
+	 * Retrieve fee_plans for current merchant
+	 *
+	 * @return FeePlan[]|array
+	 *
+	 * @throws RequestError On API exception.
+	 */
+	public function get_fee_plans() {
+		$client = $this->get_alma_client();
+		if ( ! $client ) {
+			return array();
+		}
+		return $client->merchants->feePlans();
 	}
 }

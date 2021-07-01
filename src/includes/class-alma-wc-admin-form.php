@@ -6,8 +6,6 @@
  * @noinspection HtmlUnknownTarget
  */
 
-use Alma\API\RequestError;
-
 if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Not allowed' ); // Exit if accessed directly.
 }
@@ -74,7 +72,7 @@ class Alma_WC_Admin_Form {
 		$merchant_fee_variable = $fee_plan['merchant_fee_variable'] / 100; // percent.
 		$customer_fee_fixed    = alma_wc_price_from_cents( $fee_plan['customer_fee_fixed'] );
 		$customer_fee_variable = $fee_plan['customer_fee_variable'] / 100; // percent.
-		$default_enabled       = $default_settings['selected_fee_plan'] === $key ? 'Yes' : 'No';
+		$default_enabled       = $default_settings['selected_fee_plan'] === $key ? 'yes' : 'no';
 		$custom_attributes     = array(
 			'required' => 'required',
 			'min'      => $default_min_amount,
@@ -183,37 +181,27 @@ class Alma_WC_Admin_Form {
 	 * @return array|array[]
 	 */
 	private function init_fee_plans_fields( $default_settings ) {
-		$fee_plans_fields  = array();
-		$select_options    = array();
-		$selected_fee_plan = $default_settings['selected_fee_plan'];
-		$title_field       = array(
+		$fee_plans_fields = array();
+		$title_field      = array(
 			'fee_plan_section' => array(
 				'title' => '<hr>' . __( '→ Fee plans configuration', 'alma-woocommerce-gateway' ),
 				'type'  => 'title',
 			),
 		);
-		try {
-			$merchant       = alma_wc_plugin()->get_alma_client()->merchants->me();
-			$fee_plans      = $merchant->fee_plans;
-			$select_options = $this->generate_select_options( $fee_plans );
-			if ( count( $select_options ) === 0 ) {
-				/* translators: %s: Alma conditions URL */
-				$title_field['fee_plan_section']['description'] = sprintf( __( '⚠ There is no fee plan allowed in your <a href="%s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'conditions' ) );
+		$select_options   = $this->generate_select_options();
+		if ( count( $select_options ) === 0 ) {
+			/* translators: %s: Alma conditions URL */
+			$title_field['fee_plan_section']['description'] = sprintf( __( '⚠ There is no fee plan allowed in your <a href="%s" target="_blank">Alma dashboard</a>.', 'alma-woocommerce-gateway' ), alma_wc_plugin()->get_alma_dashboard_url( 'conditions' ) );
 
-				return $title_field;
-			}
-			$selected_fee_plan = $this->generate_selected_fee_plan_key( $select_options, $default_settings );
-			foreach ( $fee_plans as $fee_plan ) {
-				if ( $fee_plan['allowed'] ) {
-					$fee_plan_key     = $fee_plan['installments_count'] . 'x';
-					$fee_plans_fields = array_merge(
-						$fee_plans_fields,
-						$this->init_fee_plan_fields( $fee_plan, $default_settings, $selected_fee_plan === $fee_plan_key )
-					);
-				}
-			}
-		} catch ( RequestError $e ) {
-			alma_wc_plugin()->handle_settings_exception( $e );
+			return $title_field;
+		}
+		$selected_fee_plan = $this->generate_selected_fee_plan_key( $select_options, $default_settings );
+		foreach ( alma_wc_plugin()->settings->get_allowed_fee_plans() as $fee_plan ) {
+			$fee_plan_key     = $fee_plan['installments_count'] . 'x';
+			$fee_plans_fields = array_merge(
+				$fee_plans_fields,
+				$this->init_fee_plan_fields( $fee_plan, $default_settings, $selected_fee_plan === $fee_plan_key )
+			);
 		}
 
 		return array_merge(
@@ -430,18 +418,14 @@ class Alma_WC_Admin_Form {
 	/**
 	 * Generate select options key values for allowed fee_plans
 	 *
-	 * @param array $fee_plans as merchant fee_plans.
-	 *
 	 * @return array
 	 */
-	private function generate_select_options( $fee_plans ) {
+	private function generate_select_options() {
 		$select_options = array();
-		foreach ( $fee_plans as $fee_plan ) {
-			if ( $fee_plan['allowed'] ) {
-				$option_key = $fee_plan['installments_count'] . 'x';
-				// translators: %d: number of installments.
-				$select_options[ $option_key ] = sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $fee_plan['installments_count'] );
-			}
+		foreach ( alma_wc_plugin()->settings->get_allowed_fee_plans() as $fee_plan ) {
+			$option_key = $fee_plan['installments_count'] . 'x';
+			// translators: %d: number of installments.
+			$select_options[ $option_key ] = sprintf( __( '→ %d-installment payment', 'alma-woocommerce-gateway' ), $fee_plan['installments_count'] );
 		}
 		return $select_options;
 	}

@@ -25,6 +25,8 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 
 	const ALMA_PAYMENT_PLAN_TABLE_ID_TEMPLATE = 'alma-payment-plan-table-%d-installments';
 	const ALMA_PAYMENT_PLAN_TABLE_CSS_CLASS   = 'js-alma-payment-plan-table';
+	const PNX_AMOUNT_KEY_REGEX                = '#^(min|max)_amount_[0-9]+x$#';
+	const PNX_ENABLED_KEY_REGEX               = '#^enabled_([0-9]+)x$#';
 
 	/**
 	 * Logger
@@ -77,11 +79,36 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	public function get_option( $key, $empty_value = null ) {
 		$option = parent::get_option( $key, $empty_value );
 
-		if ( in_array( $key, Alma_WC_Settings::AMOUNT_KEYS, true ) ) {
+		if ( $this->is_amount_key( $key ) ) {
 			return strval( alma_wc_price_from_cents( $option ) );
 		}
 
 		return $option;
+	}
+
+	/**
+	 * Check if 'enabled' & 'min / max amounts' are set & ok according merchant configuration
+	 */
+	protected function check_fee_plans_settings() {
+		foreach ( alma_wc_plugin()->settings->get_allowed_fee_plans() as $fee_plan ) {
+			$installments       = $fee_plan['installments_count'];
+			$default_min_amount = $fee_plan['min_purchase_amount'];
+			$default_max_amount = $fee_plan['max_purchase_amount'];
+			$min_key            = "min_amount_${installments}x";
+			$max_key            = "max_amount_${installments}x";
+			$enabled_key        = "enabled_${installments}x";
+
+			if ( ! isset( $this->settings[ $min_key ] ) || $this->settings[ $min_key ] < $default_min_amount ) {
+				$this->settings[ $min_key ] = $default_min_amount;
+			}
+			if ( ! isset( $this->settings[ $max_key ] ) || $this->settings[ $max_key ] > $default_max_amount ) {
+				$this->settings[ $max_key ] = $default_max_amount;
+			}
+			if ( ! isset( $this->settings[ $enabled_key ] ) ) {
+				$this->settings[ $enabled_key ] = alma_wc_plugin()->settings->default_settings()['selected_fee_plan'] === $installments . 'x' ? 'yes' : 'no';
+			}
+		}
+
 	}
 
 	/**
@@ -108,6 +135,7 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	 */
 	public function init_settings() {
 		parent::init_settings();
+		$this->update_settings_from_merchant();
 		alma_wc_plugin()->settings->update_from( $this->settings );
 	}
 
@@ -119,65 +147,8 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 	public function process_admin_options() {
 		$previously_saved = parent::process_admin_options();
 
-		$post_data = $this->get_post_data();
-
-		// After settings have been updated, override min/max amounts to convert them to cents.
-		foreach ( $this->get_form_fields() as $key => $field ) {
-			if ( in_array( $key, Alma_WC_Settings::AMOUNT_KEYS, true ) ) {
-				try {
-					$amount                 = $this->get_field_value( $key, $field, $post_data );
-					$this->settings[ $key ] = alma_wc_price_to_cents( $amount );
-				} catch ( Exception $e ) {
-					$this->add_error( $e->getMessage() );
-				}
-			}
-		}
-
-		alma_wc_plugin()->settings->update_from( $this->settings );
-		alma_wc_plugin()->init_alma_client();
-
-		// If API is configured with its keys, try to fetch info from merchant account.
-		$need_api_key = alma_wc_plugin()->settings->need_api_key();
-		if ( ! $need_api_key ) {
-			try {
-				$merchant = alma_wc_plugin()->get_alma_client()->merchants->me();
-
-				// store merchant id.
-				$this->settings['merchant_id'] = $merchant->id;
-
-				foreach ( $merchant->fee_plans as $fee_plan ) {
-					$installments       = $fee_plan['installments_count'];
-					$default_min_amount = $fee_plan['min_purchase_amount'];
-					$default_max_amount = $fee_plan['max_purchase_amount'];
-
-					if ( $fee_plan['allowed'] ) {
-						// set min and max amount default values.
-						if ( ! isset( $this->settings[ "min_amount_${installments}x" ] ) ) {
-							$this->settings[ "min_amount_${installments}x" ] = $default_min_amount;
-						}
-						if ( ! isset( $this->settings[ "max_amount_${installments}x" ] ) ) {
-							$this->settings[ "max_amount_${installments}x" ] = $default_max_amount;
-						}
-					} else {
-						// force disable not available fee_plans to prevent showing them in checkout.
-						$this->settings[ "enabled_${installments}x" ] = 'no';
-						// reset min and max amount for disabled plans to prevent multiplication by 100 on each save.
-						$this->settings[ "min_amount_${installments}x" ] = $default_min_amount;
-						$this->settings[ "max_amount_${installments}x" ] = $default_max_amount;
-					}
-				}
-			} catch ( RequestError $e ) {
-				alma_wc_plugin()->handle_settings_exception( $e );
-			}
-		} else {
-			// reset merchant id.
-			$this->settings['merchant_id'] = null;
-			// reset min and max amount for all plans.
-			foreach ( Alma_WC_Settings::AMOUNT_KEYS as $amount_key ) {
-				$this->settings[ $amount_key ] = null;
-			}
-		}
-
+		$this->convert_amounts_to_cents();
+		$this->update_settings_from_merchant();
 		alma_wc_plugin()->settings->update_from( $this->settings );
 		alma_wc_plugin()->force_check_settings();
 
@@ -586,5 +557,88 @@ class Alma_WC_Payment_Gateway extends WC_Payment_Gateway {
 		}
 
 		return $is_eligible;
+	}
+
+	/**
+	 * After settings have been updated, override min/max amounts to convert them to cents.
+	 */
+	private function convert_amounts_to_cents() {
+		$post_data = $this->get_post_data();
+		foreach ( $this->get_form_fields() as $key => $field ) {
+			if ( $this->is_amount_key( $key ) ) {
+				try {
+					$amount                 = $this->get_field_value( $key, $field, $post_data );
+					$this->settings[ $key ] = alma_wc_price_to_cents( $amount );
+				} catch ( Exception $e ) {
+					$this->add_error( $e->getMessage() );
+				}
+			}
+		}
+	}
+
+	/**
+	 * If API is configured with its keys, try to fetch info from merchant account.
+	 */
+	private function update_settings_from_merchant() {
+		if ( alma_wc_plugin()->settings->need_api_key() ) {
+			$this->reset_merchant_settings();
+
+			return;
+		}
+
+		try {
+			$merchant                      = alma_wc_plugin()->get_merchant();
+			$this->settings['merchant_id'] = $merchant->id;
+		} catch ( RequestError $e ) {
+			$this->reset_merchant_settings();
+			alma_wc_plugin()->handle_settings_exception( $e );
+			return;
+		}
+		$this->check_fee_plans_settings();
+
+		$this->disable_unavailable_fee_plans_config();
+	}
+
+	/**
+	 * Reset merchant & amount settings
+	 */
+	private function reset_merchant_settings() {
+		// reset merchant id.
+		$this->settings['merchant_id'] = null;
+		// reset min and max amount for all plans.
+		foreach ( array_keys( $this->settings ) as $key ) {
+			if ( $this->is_amount_key( $key ) ) {
+				$this->settings[ $key ] = null;
+			}
+		}
+	}
+
+	/**
+	 * Check if key match amount key format
+	 *
+	 * @param string $key As setting's key.
+	 *
+	 * @return boolean
+	 */
+	private function is_amount_key( $key ) {
+		return preg_match( self::PNX_AMOUNT_KEY_REGEX, $key ) > 0;
+	}
+
+	/**
+	 * Force disable not available fee_plans to prevent showing them in checkout.
+	 */
+	private function disable_unavailable_fee_plans_config() {
+		$allowed_installments = alma_wc_plugin()->settings->get_allowed_installments();
+		if ( ! $allowed_installments ) {
+			return;
+		}
+		foreach ( array_keys( $this->settings ) as $key ) {
+			if ( preg_match( self::PNX_ENABLED_KEY_REGEX, $key, $matches ) ) {
+				// force disable not available fee_plans to prevent showing them in checkout.
+				if ( ! in_array( intval( $matches[1] ), $allowed_installments, true ) ) {
+					$this->settings[ "enabled_${matches[1]}x" ] = 'no';
+				}
+			}
+		}
 	}
 }
