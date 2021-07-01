@@ -3,7 +3,7 @@
     "description": "Alma WooCommerce integration, adds a new payment method to your shop to let your customers pay in monthly installments",
     "type": "library",
     "require": {
-        "alma/alma-php-client": "^1.0"
+        "alma/alma-php-client": "^1.1"
     },
     "require-dev": {
         "dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
